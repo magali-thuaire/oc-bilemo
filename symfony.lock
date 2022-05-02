@@ -92,6 +92,9 @@
     "doctrine/sql-formatter": {
         "version": "1.1.2"
     },
+    "fakerphp/faker": {
+        "version": "v1.19.0"
+    },
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.10"
     },
@@ -234,6 +237,12 @@
     "symfony/polyfill-php81": {
         "version": "v1.25.0"
     },
+    "symfony/property-access": {
+        "version": "v6.0.8"
+    },
+    "symfony/property-info": {
+        "version": "v6.0.7"
+    },
     "symfony/proxy-manager-bridge": {
         "version": "v6.0.6"
     },
@@ -270,5 +279,23 @@
     },
     "symfony/yaml": {
         "version": "v6.0.3"
+    },
+    "zenstruck/assert": {
+        "version": "v1.0.1"
+    },
+    "zenstruck/callback": {
+        "version": "v1.4.2"
+    },
+    "zenstruck/foundry": {
+        "version": "1.18",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.10",
+            "ref": "37c2f894cc098ab4c08874b80cccc8e2f8de7976"
+        },
+        "files": [
+            "config/packages/zenstruck_foundry.yaml"
+        ]
     }
 }
