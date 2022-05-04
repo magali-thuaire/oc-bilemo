@@ -43,4 +43,17 @@ final class UserController extends AbstractController
             ['groups' => ['user:read']]
         );
     }
+
+    #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: ['PUT', 'PATCH'])]
+    public function update(User $user, Request $request): JsonResponse
+    {
+        $user = $this->userManager->update($user, $request, ['groups' => ['user:write']]);
+
+        return $this->json(
+            $user,
+            Response::HTTP_OK,
+            ['Location' => $this->generateUrl('api_users_show', ['id' => $user->getId()])],
+            ['groups' => ['user:read']]
+        );
+    }
 }

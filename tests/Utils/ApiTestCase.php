@@ -29,8 +29,8 @@ class ApiTestCase extends WebTestCase
 //            $this->printDebug('');
 //            $this->printDebug('<error>Failure!</error> when making the following request:');
 //            $this->printDebug('');
-            $response = $this->client->getResponse();
-            $this->debugResponse($response);
+//            $response = $this->client->getResponse();
+//            $this->debugResponse($response);
 //        }
 
         throw $t;
@@ -70,7 +70,6 @@ class ApiTestCase extends WebTestCase
         if (null === $this->output) {
             $this->output = new ConsoleOutput();
         }
-
         $this->output->writeln($string);
     }
 

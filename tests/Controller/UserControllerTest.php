@@ -2,17 +2,25 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\User;
 use App\Factory\UserFactory;
+use App\Repository\UserRepository;
 use App\Tests\Utils\ApiTestCase;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class UserControllerTest extends ApiTestCase
 {
-    private object $translator;
+    private ?TranslatorInterface $translator;
+    private ?UserRepository $userRepository;
+    private ?UserPasswordHasherInterface $userPasswodHasher;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->translator = $this->getService('translator.data_collector');
+        $this->userRepository = $this->getService('doctrine')->getRepository(User::class);
+        $this->userPasswodHasher = $this->getService('security.user_password_hasher');
     }
 
     public function testPOSTNew()
@@ -63,10 +71,11 @@ final class UserControllerTest extends ApiTestCase
         );
     }
 
-    public function testValidationErrors()
+    public function testPOSTNewValidationErrors()
     {
+        // 1- not blank password
         $data = [
-            'email' => 'post@test.fr',
+            'email' => 'post_error@test.fr',
             'password' => ''
         ];
 
@@ -98,6 +107,24 @@ final class UserControllerTest extends ApiTestCase
         );
         $this->asserter()->assertResponsePropertyDoesNotExist($response, 'errors.email');
         $this->assertEquals('application/problem+json', $response->headers->get('Content-Type'));
+
+        // 2- min password
+        $data = [
+            'email' => 'post_error@test.fr',
+            'password' => 'bile'
+        ];
+
+        $this->client->jsonRequest('POST', '/api/users', $data);
+
+        $this->assertResponseStatusCodeSame(400);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertyExists($response, 'errors.password');
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'errors.password[0]',
+            $this->translator->trans('user.password.min', ['{{ limit }}' => 6], 'validators')
+        );
     }
 
     public function testInvalidJson()
@@ -193,6 +220,92 @@ EOF;
             $response,
             'title',
             'Not Found'
+        );
+    }
+
+    public function testPUTUpdate()
+    {
+        $user = UserFactory::new()
+                   ->withAttributes([
+                       'email' => 'put@test.fr',
+                       'password' => 'bilemo'
+                   ])
+                   ->createdNow()
+                   ->create();
+
+        $data = [
+            'email' => 'put_update@test.fr',
+            'password' => 'mobile'
+        ];
+        $this->client->jsonRequest('PUT', '/api/users/' . $user->getId(), $data);
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertiesExist($response, [
+            'email'
+        ]);
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'email',
+            'put_update@test.fr'
+        );
+        $updatedUser = $this->userRepository->find($user->getId());
+        $this->assertTrue($this->userPasswodHasher->isPasswordValid($updatedUser, 'mobile'));
+    }
+
+    public function testPATCHUpdate()
+    {
+        $user = UserFactory::new()
+                   ->withAttributes([
+                       'email' => 'patch@test.fr',
+                       'password' => 'bilemo'
+                   ])
+                   ->createdNow()
+                   ->create();
+
+        $data = [
+            'email' => 'patch_update@test.fr',
+        ];
+        $this->client->jsonRequest('PATCH', '/api/users/' . $user->getId(), $data);
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertiesExist($response, [
+            'email'
+        ]);
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'email',
+            'patch_update@test.fr'
+        );
+    }
+
+    public function testPATCHUpdateValidationErrors()
+    {
+        // 1- min password
+        $user = UserFactory::new()
+                   ->withAttributes([
+                       'email' => 'patch_error@test.fr',
+                       'password' => 'bilemo'
+                   ])
+                   ->createdNow()
+                   ->create();
+
+        $data = [
+            'password' => 'test',
+        ];
+        $this->client->jsonRequest('PATCH', '/api/users/' . $user->getId(), $data);
+
+        $this->assertResponseStatusCodeSame(400);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertyExists($response, 'errors.password');
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'errors.password[0]',
+            $this->translator->trans('user.password.min', ['{{ limit }}' => 6], 'validators')
         );
     }
 }
