@@ -206,6 +206,11 @@ EOF;
             'email',
             'get@test.fr'
         );
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            '_links.self',
+            '/api/users/' . $user->getId()
+        );
     }
 
     public function test404Exception()

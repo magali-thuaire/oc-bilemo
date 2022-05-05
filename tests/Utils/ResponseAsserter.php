@@ -1,10 +1,4 @@
-<?php
-
-/** @noinspection PhpUnusedLocalVariableInspection */
-
-/** @noinspection PhpMissingFieldTypeInspection */
-
-/** @noinspection PhpMultipleClassDeclarationsInspection */
+<?php /** @noinspection ALL */
 
 namespace App\Tests\Utils;
 
