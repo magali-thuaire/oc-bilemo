@@ -3,28 +3,39 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
+use App\Service\Attribute\Link;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation\Timestampable;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation as Annotation;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[UniqueEntity(fields: ['name'], message: 'product.name.unique')]
+#[Link(
+    name: 'self',
+    route: 'api_products_show',
+    params: ['id' => 'object.getId()']
+)]
 class Product
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Annotation\Groups(['product:read'])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Annotation\Groups(['product:read'])]
     private $name;
 
     #[ORM\Column(type: 'text')]
+    #[Annotation\Groups(['product:read'])]
     private $description;
 
     #[ORM\Column(type: 'float')]
+    #[Annotation\Groups(['product:read'])]
     private $price;
 
     #[Timestampable(on: 'create')]

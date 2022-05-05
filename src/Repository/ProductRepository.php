@@ -24,8 +24,6 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function add(Product $entity, bool $flush = false): void
     {
@@ -36,8 +34,6 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
      */
     public function remove(Product $entity, bool $flush = false): void
     {
