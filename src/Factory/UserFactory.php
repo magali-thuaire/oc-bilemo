@@ -38,6 +38,14 @@ final class UserFactory extends ModelFactory
         $this->userPasswordHasher = $userPasswordHasher;
     }
 
+    public function createdNow(): self
+    {
+        return  $this->addState([
+            'createdAt' => self::faker()->dateTimeBetween('now'),
+            'updatedAt' => self::faker()->dateTimeBetween('now'),
+        ]);
+    }
+
     protected function getDefaults(): array
     {
         return [
