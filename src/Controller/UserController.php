@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Manager\UserManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,7 +28,18 @@ final class UserController extends AbstractController
         return $this->json(
             $user,
             Response::HTTP_CREATED,
-            ['Location' => '/api/users/' . $user->getId()],
+            ['Location' => $this->generateUrl('api_users_show', ['id' => $user->getId()])],
+            ['groups' => ['user:read']]
+        );
+    }
+
+    #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function show(User $user): JsonResponse
+    {
+        return $this->json(
+            $user,
+            Response::HTTP_OK,
+            ['Location' => $this->generateUrl('api_users_show', ['id' => $user->getId()])],
             ['groups' => ['user:read']]
         );
     }

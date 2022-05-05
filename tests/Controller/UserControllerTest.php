@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Factory\UserFactory;
 use App\Tests\Utils\ApiTestCase;
 
 final class UserControllerTest extends ApiTestCase
@@ -141,6 +142,57 @@ EOF;
             $response,
             'title',
             'Method Not Allowed'
+        );
+    }
+
+    public function testGETShow()
+    {
+        $user = UserFactory::new()
+                   ->withAttributes([
+                       'email' => 'get@test.fr',
+                       'password' => 'bilemo'
+                   ])
+                   ->createdNow()
+                   ->create();
+
+        $this->client->jsonRequest('GET', '/api/users/' . $user->getId());
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertiesExist($response, [
+            'id',
+            'email',
+            'createdAt',
+            'updatedAt'
+        ]);
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'email',
+            'get@test.fr'
+        );
+    }
+
+    public function test404Exception()
+    {
+        $this->client->jsonRequest('GET', '/api/users/fake');
+
+        $this->assertResponseStatusCodeSame(404);
+
+        $response = $this->client->getResponse();
+        $this->assertEquals(
+            'application/problem+json',
+            $response->headers->get('Content-Type')
+        );
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'type',
+            'about:blank'
+        );
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'title',
+            'Not Found'
         );
     }
 }
