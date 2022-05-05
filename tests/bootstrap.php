@@ -1,4 +1,20 @@
-<?php
+<?php /** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpCSValidationInspection */
+
+/** @noinspection PhpIncludeInspection */
 
 use Symfony\Component\Dotenv\Dotenv;
 
