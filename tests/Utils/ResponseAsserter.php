@@ -110,7 +110,7 @@ class ResponseAsserter extends Assert
      */
     public function assertResponsePropertyIsArray(Response $response, string $propertyPath)
     {
-        $this->assertResponsePropertyIsArray($response, $propertyPath);
+        $this->assertIsArray($this->readResponseProperty($response, $propertyPath));
     }
 
     /**

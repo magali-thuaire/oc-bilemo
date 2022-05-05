@@ -20,6 +20,19 @@ final class UserController extends AbstractController
         $this->userManager = $userManager;
     }
 
+    #[Route('', name: 'list', methods: ['GET'])]
+    public function list(Request $request): JsonResponse
+    {
+        $users = $this->userManager->list($request);
+
+        return $this->json(
+            $users,
+            Response::HTTP_OK,
+            [],
+            ['groups' => ['user:read']]
+        );
+    }
+
     #[Route('', name: 'new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
