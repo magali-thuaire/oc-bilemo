@@ -1,33 +1,61 @@
 <?php
 
+/** @noinspection PhpPropertyOnlyWrittenInspection */
+
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTime;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Gedmo\Mapping\Annotation\Timestampable;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation as Annotation;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity(fields: ['email'], message: 'user.email.unique')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    use TimestampableEntity;
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    #[Annotation\Groups(['user:read'])]
+    private ?int $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    private $email;
+    #[Assert\NotBlank(message: 'user.email.invalid')]
+    #[Assert\Email(message: 'user.email.invalid')]
+    #[Annotation\Groups(['user:write', 'user:read'])]
+    private ?string $email;
 
     #[ORM\Column(type: 'json')]
-    private $roles = [];
+    private array $roles = [];
 
     #[ORM\Column(type: 'string')]
-    private $password;
+    private string $password;
 
-    private $plainPassword;
+    #[SerializedName('password')]
+    #[Annotation\Groups(['user:write'])]
+    #[Assert\Length(min: 6, max: 4096, minMessage: 'user.password.min')]
+    #[Assert\NotBlank(message: 'user.password.not_blank')]
+    private ?string $plainPassword;
+
+    #[Timestampable(on: 'create')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['user:read'])]
+    private $createdAt;
+
+    #[Timestampable(on: 'update')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['user:read'])]
+    private $updatedAt;
+
+    private const DATETIME_FORMAT = 'd/m/Y H:i:s';
 
     public function getId(): ?int
     {
@@ -99,15 +127,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
          $this->plainPassword = null;
     }
 
-    public function getPlainPassword(): string
+    public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
 
-    public function setPlainPassword(string $plainPassword): self
+    public function setPlainPassword(?string $plainPassword): self
     {
         $this->plainPassword = $plainPassword;
 
         return $this;
+    }
+
+    public function setCreatedAt(DateTime $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->createdAt->format(self::DATETIME_FORMAT);
+    }
+
+    public function setUpdatedAt(DateTime $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt->format(self::DATETIME_FORMAT);
     }
 }

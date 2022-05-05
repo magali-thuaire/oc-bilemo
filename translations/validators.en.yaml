@@ -1,0 +1,4 @@
+user.email.invalid: 'Please enter a valid email.'
+user.password.not_blank: 'Please enter a valid password.'
+user.password.min: 'Your password should be at least {{ limit }} characters.'
+user.email.unique: 'There is already an account with this email.'
