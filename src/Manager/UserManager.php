@@ -7,14 +7,8 @@ use App\Form\UserFormType;
 use App\Repository\UserRepository;
 use App\Service\FormService;
 use App\Service\Pagination\PaginationFactory;
-use App\Service\PaginatorService;
-use Pagerfanta\Doctrine\ORM\QueryAdapter;
-use Pagerfanta\Pagerfanta;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\Router;
-use Symfony\Component\Routing\RouterInterface;
 
 final class UserManager
 {
@@ -37,7 +31,7 @@ final class UserManager
 
     public function list(Request $request): array
     {
-        $filter = $request->query->get('filter', null);
+        $filter = $request->query->get('filter');
         $order = $request->query->get('order', 'DESC');
 
         $qb = $this->userRepository->findAllQueryBuilder($order, $filter);
