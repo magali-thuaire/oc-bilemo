@@ -4,8 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -41,6 +40,21 @@ class ProductRepository extends ServiceEntityRepository
         if ($flush) {
             $this->_em->flush();
         }
+    }
+
+    public function findAllQueryBuilder(string $order = 'DESC', ?string $filter = null): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('p')
+                   ->orderBy('p.createdAt', strtoupper($order))
+        ;
+
+        if ($filter) {
+            $qb->andWhere('u.name LIKE :filter')
+               ->setParameter('filter', "%$filter%")
+            ;
+        }
+
+        return $qb;
     }
 
 //    /**
