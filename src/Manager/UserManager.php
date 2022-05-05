@@ -63,6 +63,11 @@ final class UserManager
         return $user;
     }
 
+    public function remove(User $user): void
+    {
+        $this->userRepository->remove($user);
+    }
+
     private function setUserPassword(User $user): void
     {
         if ($user->getPlainPassword()) {
