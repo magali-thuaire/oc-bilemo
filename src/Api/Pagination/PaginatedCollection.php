@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Pagination;
+namespace App\Api\Pagination;
 
 class PaginatedCollection
 {

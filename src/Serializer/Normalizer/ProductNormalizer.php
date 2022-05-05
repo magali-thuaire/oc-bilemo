@@ -3,7 +3,7 @@
 namespace App\Serializer\Normalizer;
 
 use App\Entity\Product;
-use App\Service\Attribute\LinkResolver;
+use App\Api\Attribute\LinkResolver;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;

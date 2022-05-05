@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Attribute;
+namespace App\Api\Attribute;
 
 use ReflectionClass;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;

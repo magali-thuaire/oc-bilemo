@@ -6,7 +6,7 @@ use App\Entity\User;
 use App\Form\UserFormType;
 use App\Repository\UserRepository;
 use App\Service\FormService;
-use App\Service\Pagination\PaginationFactory;
+use App\Api\Pagination\PaginationFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 

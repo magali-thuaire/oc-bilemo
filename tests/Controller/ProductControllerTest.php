@@ -2,18 +2,18 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\Product;
 use App\Factory\ProductFactory;
-use App\Factory\UserFactory;
 use App\Tests\Utils\ApiTestCase;
+use Zenstruck\Foundry\Proxy;
 
 final class ProductControllerTest extends ApiTestCase
 {
-
     public function testGETShow()
     {
-        $product = ProductFactory::new()
-                   ->createdNow()
-                   ->create();
+        $this->setAuthorizedClient();
+
+        $product = $this->createProduct();
 
         $this->client->jsonRequest('GET', '/api/products/' . $product->getId());
 
@@ -47,9 +47,7 @@ final class ProductControllerTest extends ApiTestCase
 
     public function test405Exception()
     {
-        $product = ProductFactory::new()
-                     ->createdNow()
-                     ->create();
+        $product = $this->createProduct();
 
         $this->client->jsonRequest('PUT', '/api/products/' . $product->getId());
 
@@ -97,9 +95,9 @@ final class ProductControllerTest extends ApiTestCase
 
     public function testGETList()
     {
-        ProductFactory::new()
-           ->createdNow()
-           ->createMany(40);
+        $this->setAuthorizedClient();
+
+        $this->createProducts(40);
 
         $this->client->jsonRequest('GET', '/api/products');
 
@@ -118,11 +116,11 @@ final class ProductControllerTest extends ApiTestCase
 
     public function testGETListPaginated()
     {
-        UserFactory::new()
-           ->createdNow()
-           ->createMany(40);
+        $this->setAuthorizedClient();
 
-        $this->client->jsonRequest('GET', '/api/users');
+        $this->createProducts(40);
+
+        $this->client->jsonRequest('GET', '/api/products');
 
         $this->assertResponseStatusCodeSame(200);
 
@@ -179,7 +177,7 @@ final class ProductControllerTest extends ApiTestCase
         );
 
         // filtering
-        $this->client->jsonRequest('GET', '/api/users?order=asc&filter=a');
+        $this->client->jsonRequest('GET', '/api/products?order=asc&filter=a');
 
         $response = $this->client->getResponse();
 
@@ -189,4 +187,19 @@ final class ProductControllerTest extends ApiTestCase
             '?order=asc&filter=a'
         );
     }
+
+    private function createProduct(): Product|Proxy
+    {
+        return ProductFactory::new()
+                    ->createdNow()
+                    ->create();
+    }
+
+    private function createProducts(int $nb = 20): void
+    {
+        ProductFactory::new()
+             ->createdNow()
+             ->createMany($nb);
+    }
+
 }

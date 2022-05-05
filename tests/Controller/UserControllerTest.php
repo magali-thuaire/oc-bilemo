@@ -25,9 +25,11 @@ final class UserControllerTest extends ApiTestCase
 
     public function testPOSTNew()
     {
+        $this->setAuthorizedClient();
+
         // 1- First request
         $data = [
-               'email' => 'post@test.fr',
+               'email' => 'test@bilemo.fr',
                'password' => 'bilemo',
         ];
         $this->client->jsonRequest('POST', '/api/users', $data);
@@ -49,7 +51,7 @@ final class UserControllerTest extends ApiTestCase
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',
-            'post@test.fr'
+            'test@bilemo.fr'
         );
 
         // 2- Second request with same data
@@ -76,9 +78,11 @@ final class UserControllerTest extends ApiTestCase
 
     public function testPOSTNewValidationErrors()
     {
+        $this->setAuthorizedClient();
+
         // 1- not blank password
         $data = [
-            'email' => 'post_error@test.fr',
+            'email' => 'post_error@bilemo.fr',
             'password' => ''
         ];
 
@@ -124,7 +128,7 @@ final class UserControllerTest extends ApiTestCase
 
         // 2- min password
         $data = [
-            'email' => 'post_error@test.fr',
+            'email' => 'post_error@bilemo.fr',
             'password' => 'bile'
         ];
 
@@ -146,10 +150,11 @@ final class UserControllerTest extends ApiTestCase
 
     public function testInvalidJson()
     {
+        $this->setAuthorizedClient();
 
         $invalidJson = <<<EOF
 [
-            'email' => 'post@test.fr
+            'email' => 'test@bilemo.fr
             'password' => 'bilemo'
 }
 EOF;
@@ -191,9 +196,11 @@ EOF;
 
     public function testGETShow()
     {
+        $this->setAuthorizedClient();
+
         $user = UserFactory::new()
                    ->withAttributes([
-                       'email' => 'get@test.fr',
+                       'email' => 'test@bilemo.fr',
                        'password' => 'bilemo'
                    ])
                    ->createdNow()
@@ -217,7 +224,7 @@ EOF;
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',
-            'get@test.fr'
+            'test@bilemo.fr'
         );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
@@ -251,16 +258,12 @@ EOF;
 
     public function testPUTUpdate()
     {
-        $user = UserFactory::new()
-                   ->withAttributes([
-                       'email' => 'put@test.fr',
-                       'password' => 'bilemo'
-                   ])
-                   ->createdNow()
-                   ->create();
+        $this->setAuthorizedClient();
+
+        $user = $this->createUser();
 
         $data = [
-            'email' => 'put_update@test.fr',
+            'email' => 'update@bilemo.fr',
             'password' => 'mobile'
         ];
         $this->client->jsonRequest('PUT', '/api/users/' . $user->getId(), $data);
@@ -275,7 +278,7 @@ EOF;
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',
-            'put_update@test.fr'
+            'update@bilemo.fr'
         );
         $updatedUser = $this->userRepository->find($user->getId());
         $this->assertTrue($this->userPasswodHasher->isPasswordValid($updatedUser, 'mobile'));
@@ -283,16 +286,12 @@ EOF;
 
     public function testPATCHUpdate()
     {
-        $user = UserFactory::new()
-                   ->withAttributes([
-                       'email' => 'patch@test.fr',
-                       'password' => 'bilemo'
-                   ])
-                   ->createdNow()
-                   ->create();
+        $this->setAuthorizedClient();
+
+        $user = $this->createUser();
 
         $data = [
-            'email' => 'patch_update@test.fr',
+            'email' => 'patch@bilemo.fr',
         ];
         $this->client->jsonRequest('PATCH', '/api/users/' . $user->getId(), $data);
 
@@ -306,23 +305,19 @@ EOF;
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',
-            'patch_update@test.fr'
+            'patch@bilemo.fr'
         );
     }
 
     public function testPATCHUpdateValidationErrors()
     {
+        $this->setAuthorizedClient();
+
         // 1- min password
-        $user = UserFactory::new()
-                   ->withAttributes([
-                       'email' => 'patch_error@test.fr',
-                       'password' => 'bilemo'
-                   ])
-                   ->createdNow()
-                   ->create();
+        $user = $this->createUser();
 
         $data = [
-            'password' => 'test',
+            'password' => 'patch',
         ];
         $this->client->jsonRequest('PATCH', '/api/users/' . $user->getId(), $data);
 
@@ -342,13 +337,9 @@ EOF;
 
     public function testDELETERemove()
     {
-        $user = UserFactory::new()
-                   ->withAttributes([
-                       'email' => 'delete@test.fr',
-                       'password' => 'bilemo'
-                   ])
-                   ->createdNow()
-                   ->create();
+        $this->setAuthorizedClient();
+
+        $user = $this->createUser();
 
         $this->client->jsonRequest('DELETE', '/api/users/' . $user->getId());
 
@@ -363,9 +354,9 @@ EOF;
 
     public function testGETList()
     {
-        UserFactory::new()
-            ->createdNow()
-            ->createMany(10);
+        $this->setAuthorizedClient();
+
+        $this->createUsers(10);
 
         $this->client->jsonRequest('GET', '/api/users');
 
@@ -384,9 +375,9 @@ EOF;
 
     public function testGETListPaginated()
     {
-        UserFactory::new()
-           ->createdNow()
-           ->createMany(40);
+        $this->setAuthorizedClient();
+
+        $this->createUsers(20);
 
         $this->client->jsonRequest('GET', '/api/users');
 
@@ -401,7 +392,7 @@ EOF;
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'total',
-            40
+            21
         );
         $this->asserter()->assertResponsePropertyExists(
             $response,
@@ -455,4 +446,12 @@ EOF;
             '?order=asc&filter=a'
         );
     }
+
+    private function createUsers(int $nb): void
+    {
+        UserFactory::new()
+           ->createdNow()
+           ->createMany($nb);
+    }
+
 }
