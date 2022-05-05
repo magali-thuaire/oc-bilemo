@@ -3,7 +3,7 @@
 namespace App\Manager;
 
 use App\Repository\ProductRepository;
-use App\Service\Pagination\PaginationFactory;
+use App\Api\Pagination\PaginationFactory;
 use Symfony\Component\HttpFoundation\Request;
 
 final class ProductManager

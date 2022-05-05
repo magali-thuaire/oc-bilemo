@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Attribute;
+namespace App\Api\Attribute;
 
 use Attribute;
 use Symfony\Contracts\Service\Attribute\Required;

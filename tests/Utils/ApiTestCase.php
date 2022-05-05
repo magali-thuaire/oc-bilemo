@@ -2,17 +2,23 @@
 
 namespace App\Tests\Utils;
 
+use App\Entity\User;
+use App\Factory\UserFactory;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
+use PHPUnit\Framework\ExpectationFailedException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Translation\Formatter\MessageFormatterInterface;
 use Throwable;
+use Zenstruck\Foundry\Proxy;
 
 class ApiTestCase extends WebTestCase
 {
     protected KernelBrowser $client;
+    protected KernelBrowser $authorizedClient;
     private $output;
     private $responseAsserter;
     private $formatterHelper;
@@ -21,6 +27,17 @@ class ApiTestCase extends WebTestCase
     {
         $this->client = self::createClient();
         $this->purgeDatabase();
+    }
+
+    protected function setAuthorizedClient() {
+
+        $user = $this->createUser('authorized@test.fr');
+
+        $token = $this->getService('lexik_jwt_authentication.encoder')
+                      ->encode(['email' => $user->getEmail()]);
+        $autorization = 'Bearer '. $token;
+
+        $this->client->setServerParameter('HTTP_AUTHORIZATION', $autorization);
     }
 
     protected function onNotSuccessfulTest(Throwable $t): void
@@ -32,7 +49,7 @@ class ApiTestCase extends WebTestCase
 //            $response = $this->client->getResponse();
 //            $this->debugResponse($response);
 //        }
-
+//        throw new ExpectationFailedException();
         throw $t;
     }
 
@@ -49,7 +66,6 @@ class ApiTestCase extends WebTestCase
 
     protected function debugResponse(Response $response)
     {
-//        $this->printDebug(AbstractMessage::getStartLineAndHeaders($response));
         $this->printDebug($response);
         $body = (string) $response->getContent();
 
@@ -90,5 +106,16 @@ class ApiTestCase extends WebTestCase
         }
 
         return $this->responseAsserter;
+    }
+
+    protected function createUser(string $email = 'test@bilemo.fr'): Proxy|User
+    {
+        return UserFactory::new()
+                  ->withAttributes([
+                      'email' => $email,
+                      'password' => 'bilemo'
+                  ])
+                  ->createdNow()
+                  ->create();
     }
 }
