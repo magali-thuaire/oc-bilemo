@@ -87,12 +87,18 @@ final class UserControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(400);
 
         $response = $this->client->getResponse();
-        $this->asserter()->assertResponsePropertiesExist($response, [
-            'type',
-            'title',
-            'errors'
-        ]);
-        $this->asserter()->assertResponsePropertyExists($response, 'errors.password');
+        $this->asserter()->assertResponsePropertiesExist(
+            $response,
+            [
+                'type',
+                'title',
+                'errors'
+            ]
+        );
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
+            'errors.password'
+        );
         $this->asserter()->assertResponsePropertyContains(
             $response,
             'type',
@@ -127,7 +133,10 @@ final class UserControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(400);
 
         $response = $this->client->getResponse();
-        $this->asserter()->assertResponsePropertyExists($response, 'errors.password');
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
+            'errors.password'
+        );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'errors.password[0]',
@@ -195,12 +204,16 @@ EOF;
         $this->assertResponseStatusCodeSame(200);
 
         $response = $this->client->getResponse();
-        $this->asserter()->assertResponsePropertiesExist($response, [
-            'id',
-            'email',
-            'createdAt',
-            'updatedAt'
-        ]);
+        $this->assertResponseHasHeader('Location');
+        $this->asserter()->assertResponsePropertiesExist(
+            $response,
+            [
+                'id',
+                'email',
+                'createdAt',
+                'updatedAt'
+            ]
+        );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',

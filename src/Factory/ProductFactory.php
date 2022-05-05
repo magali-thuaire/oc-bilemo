@@ -35,6 +35,14 @@ final class ProductFactory extends ModelFactory
         // TODO inject services if required (https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services)
     }
 
+    public function createdNow(): self
+    {
+        return  $this->addState([
+            'createdAt' => self::faker()->dateTimeBetween('now'),
+            'updatedAt' => self::faker()->dateTimeBetween('now'),
+        ]);
+    }
+
     protected function getDefaults(): array
     {
         return [
