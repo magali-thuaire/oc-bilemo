@@ -56,4 +56,15 @@ final class UserController extends AbstractController
             ['groups' => ['user:read']]
         );
     }
+
+    #[Route('/{id}', name: 'remove', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    public function remove(User $user): JsonResponse
+    {
+        $this->userManager->remove($user);
+
+        return $this->json(
+            [],
+            Response::HTTP_NO_CONTENT
+        );
+    }
 }

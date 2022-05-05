@@ -308,4 +308,25 @@ EOF;
             $this->translator->trans('user.password.min', ['{{ limit }}' => 6], 'validators')
         );
     }
+
+    public function testDELETERemove()
+    {
+        $user = UserFactory::new()
+                   ->withAttributes([
+                       'email' => 'delete@test.fr',
+                       'password' => 'bilemo'
+                   ])
+                   ->createdNow()
+                   ->create();
+
+        $this->client->jsonRequest('DELETE', '/api/users/' . $user->getId());
+
+        $this->assertResponseStatusCodeSame(204);
+
+        $response = $this->client->getResponse();
+        $this->assertEmpty($response->getContent());
+
+        $removedUser = $this->userRepository->find($user->getId());
+        $this->assertEmpty($removedUser);
+    }
 }
