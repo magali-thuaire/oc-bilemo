@@ -27,20 +27,49 @@ final class UserManager
 
     public function create(Request $request, array $context = []): User
     {
-        $form = $this->formService->processForm($request, User::class, UserFormType::class, $context);
-
-        if (!$form->isValid()) {
-            $this->formService->throwApiProblemValidationException($form, ['plainPassword' => 'password']);
-        }
+        $form = $this->formService->processForm(
+            $request,
+            null,
+            User::class,
+            UserFormType::class,
+            $context,
+            ['plainPassword' => 'password']
+        );
 
         $user = $form->getData();
-        $user
-            ->setPassword($this->userPasswordHasher->hashPassword($user, $user->getPlainPassword()))
-            ->eraseCredentials()
-        ;
+        $this->setUserPassword($user);
 
         $this->userRepository->add($user);
 
         return $user;
+    }
+
+    public function update(User $user, Request $request, array $context = []): User
+    {
+        $form = $this->formService->processForm(
+            $request,
+            $user,
+            User::class,
+            UserFormType::class,
+            $context,
+            ['plainPassword' => 'password']
+        );
+
+        $user = $form->getData();
+        $this->setUserPassword($user);
+
+        $this->userRepository->update($user);
+
+        return $user;
+    }
+
+    private function setUserPassword(User $user): void
+    {
+        if ($user->getPlainPassword()) {
+            $user
+                ->setPassword($this->userPasswordHasher->hashPassword($user, $user->getPlainPassword()))
+                ->eraseCredentials()
+            ;
+        }
     }
 }

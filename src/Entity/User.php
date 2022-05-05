@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpPropertyOnlyWrittenInspection */
-
 namespace App\Entity;
 
 use App\Repository\UserRepository;
@@ -25,13 +23,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     #[Annotation\Groups(['user:read'])]
-    private ?int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     #[Assert\NotBlank(message: 'user.email.invalid')]
     #[Assert\Email(message: 'user.email.invalid')]
     #[Annotation\Groups(['user:write', 'user:read'])]
-    private ?string $email;
+    private ?string $email = null;
 
     #[ORM\Column(type: 'json')]
     private array $roles = [];
@@ -42,8 +40,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[SerializedName('password')]
     #[Annotation\Groups(['user:write'])]
     #[Assert\Length(min: 6, max: 4096, minMessage: 'user.password.min')]
-    #[Assert\NotBlank(message: 'user.password.not_blank')]
-    private ?string $plainPassword;
+    private ?string $plainPassword = null;
 
     #[Timestampable(on: 'create')]
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

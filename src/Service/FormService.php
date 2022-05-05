@@ -1,9 +1,12 @@
-<?php
+<?php /** @noinspection PhpCSValidationInspection */
+
+/** @noinspection ALL */
 
 namespace App\Service;
 
 use App\Api\ApiProblem;
 use App\Api\ApiProblemException;
+use Exception;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,17 +26,23 @@ class FormService
         $this->formFactory = $formFactory;
     }
 
-    public function processForm(
-        Request $request,
-        string $entityType,
-        string $classType,
-        array $context = []
-    ): FormInterface {
+    public function processForm(Request $request, ?object $existingEntity, string $entityClass, string $entityFormTypeClass, array $context = [], array $reverse = []): FormInterface
+    {
 
-        $object = $this->serializer->deserialize($request->getContent(), $entityType, 'json', $context);
-        $data = $this->serializer->normalize($object, 'json', $context);
-        $form = $this->formFactory->create($classType, $object);
+        if ($existingEntity && !$existingEntity instanceof $entityClass) {
+            throw new Exception($existingEntity::class . ' is not the same instance as excepted ' . $entityClass);
+        }
 
+        // Create form with existingEntity or requestEntity
+        $requestEntity = $this->serializer->deserialize($request->getContent(), $entityClass, 'json', $context);
+        $data = $this->serializer->normalize($requestEntity, 'json', $context);
+        $form = $this->formFactory->create(
+            $entityFormTypeClass,
+            $existingEntity ?? $requestEntity,
+            ['method_patch' => ($request->getMethod() === 'PATCH')]
+        );
+
+        // Check request data are not null
         if (empty($data)) {
             $apiProblem = new ApiProblem(
                 Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
@@ -42,7 +51,13 @@ class FormService
             throw new ApiProblemException($apiProblem);
         }
 
-        $form->submit($data);
+        // Submit the form with request data
+        $form->submit($data, !($request->getMethod() === 'PATCH'));
+
+        // Check form has no validation errors
+        if (!$form->isValid()) {
+            $this->throwApiProblemValidationException($form, $reverse);
+        }
 
         return $form;
     }
@@ -77,7 +92,7 @@ class FormService
             // UniqueEntity
             if ($error->getCause()?->getConstraint()?->validatedBy() === 'doctrine.orm.validator.unique') {
                 $this->throwApiProblemUnprocessableEntityException($error->getMessage());
-            };
+            }
 
             $errors[] = $error->getMessage();
         }
