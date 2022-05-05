@@ -69,8 +69,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
 
         if ($filter) {
-            $qb->andWhere('u.email LIKE :search')
-               ->setParameter('search', "%$filter%")
+            $qb->andWhere('u.email LIKE :filter')
+               ->setParameter('filter', "%$filter%")
             ;
         }
 

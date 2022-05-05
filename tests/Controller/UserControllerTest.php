@@ -445,22 +445,14 @@ EOF;
         );
 
         // filtering
-        UserFactory::new()
-           ->withAttributes([
-               'email' => 'getlist@test.fr',
-               'password' => 'bilemo'
-           ])
-           ->createdNow()
-           ->create();
-
-        $this->client->jsonRequest('GET', '/api/users?order=asc&filter=ab');
+        $this->client->jsonRequest('GET', '/api/users?order=asc&filter=a');
 
         $response = $this->client->getResponse();
 
         $this->asserter()->assertResponsePropertyContains(
             $response,
             '_links.last',
-            '?order=asc&filter=ab'
+            '?order=asc&filter=a'
         );
     }
 }
