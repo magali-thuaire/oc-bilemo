@@ -37,12 +37,15 @@ final class UserControllerTest extends ApiTestCase
         $response = $this->client->getResponse();
         $this->assertResponseHasHeader('Location');
 
-        $this->asserter()->assertResponsePropertiesExist($response, [
-            'id',
-            'email',
-            'createdAt',
-            'updatedAt'
-        ]);
+        $this->asserter()->assertResponsePropertiesExist(
+            $response,
+            [
+                'id',
+                'email',
+                'createdAt',
+                'updatedAt'
+            ]
+        );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',
@@ -105,8 +108,13 @@ final class UserControllerTest extends ApiTestCase
             'errors.password[0]',
             $this->translator->trans('user.password.not_blank', [], 'validators')
         );
-        $this->asserter()->assertResponsePropertyDoesNotExist($response, 'errors.email');
-        $this->assertEquals('application/problem+json', $response->headers->get('Content-Type'));
+        $this->asserter()->assertResponsePropertyDoesNotExist(
+            $response,
+            'errors.email');
+        $this->assertEquals(
+            'application/problem+json',
+            $response->headers->get('Content-Type')
+        );
 
         // 2- min password
         $data = [
@@ -242,9 +250,10 @@ EOF;
         $this->assertResponseStatusCodeSame(200);
 
         $response = $this->client->getResponse();
-        $this->asserter()->assertResponsePropertiesExist($response, [
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
             'email'
-        ]);
+        );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',
@@ -272,9 +281,10 @@ EOF;
         $this->assertResponseStatusCodeSame(200);
 
         $response = $this->client->getResponse();
-        $this->asserter()->assertResponsePropertiesExist($response, [
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
             'email'
-        ]);
+        );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'email',
@@ -301,7 +311,10 @@ EOF;
         $this->assertResponseStatusCodeSame(400);
 
         $response = $this->client->getResponse();
-        $this->asserter()->assertResponsePropertyExists($response, 'errors.password');
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
+            'errors.password'
+        );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             'errors.password[0]',
@@ -328,5 +341,108 @@ EOF;
 
         $removedUser = $this->userRepository->find($user->getId());
         $this->assertEmpty($removedUser);
+    }
+
+    public function testGETList()
+    {
+        UserFactory::new()
+            ->createdNow()
+            ->createMany(10);
+
+        $this->client->jsonRequest('GET', '/api/users');
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
+            'items'
+        );
+        $this->asserter()->assertResponsePropertyIsArray(
+            $response,
+            'items'
+        );
+    }
+
+    public function testGETListPaginated()
+    {
+        UserFactory::new()
+           ->createdNow()
+           ->createMany(40);
+
+        $this->client->jsonRequest('GET', '/api/users');
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'count'
+            , 5
+        );
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'total',
+            40
+        );
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
+            '_links.next'
+        );
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
+            '_links.last'
+        );
+        $this->asserter()->assertResponsePropertyDoesNotExist(
+            $response,
+            '_links.prev'
+        );
+
+        // next Url
+        $nextUrl = $this->asserter()->readResponseProperty(
+            $response,
+            '_links.next'
+        );
+
+        $this->client->jsonRequest('GET', $nextUrl);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertyExists(
+            $response,
+            '_links.prev'
+        );
+
+        // last Url
+        $lastUrl = $this->asserter()->readResponseProperty(
+            $response,
+            '_links.last'
+        );
+
+        $this->client->jsonRequest('GET', $lastUrl);
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertResponsePropertyDoesNotExist(
+            $response,
+            '_links.next'
+        );
+
+        // filtering
+        UserFactory::new()
+           ->withAttributes([
+               'email' => 'getlist@test.fr',
+               'password' => 'bilemo'
+           ])
+           ->createdNow()
+           ->create();
+
+        $this->client->jsonRequest('GET', '/api/users?order=asc&filter=ab');
+
+        $response = $this->client->getResponse();
+
+        $this->asserter()->assertResponsePropertyContains(
+            $response,
+            '_links.last',
+            '?order=asc&filter=ab'
+        );
     }
 }
