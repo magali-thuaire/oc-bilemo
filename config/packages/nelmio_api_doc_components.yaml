@@ -1,0 +1,62 @@
+nelmio_api_doc:
+    documentation:
+        components:
+            securitySchemes:
+                Bearer:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+            parameters:
+                page:
+                    name: "page"
+                    description: 'The page number'
+                    in: 'query'
+                    schema:
+                        type: int
+                        default: 1
+                order:
+                    name: 'order'
+                    description: 'Set to (asc) or (desc) to sort with ascending/descending order by created_at property'
+                    in: 'query'
+                    schema:
+                        type: int
+                        default: 'asc'
+                        pattern: 'asc|desc'
+                filter:
+                    name: 'filter'
+                    description: 'Set to filter by username property'
+                    in: 'query'
+                    schema:
+                        type: string
+                        default: null
+            schemas:
+                Product-read:
+                    type: object
+                    properties:
+                        id:
+                            type: integer
+                        name:
+                            type: string
+                        description:
+                            type: string
+                        price:
+                            type: float
+                User-read:
+                    type: object
+                    properties:
+                        id:
+                            type: integer
+                        email:
+                            type: string
+                        createdAt:
+                            type: datetime
+                        updatedAt:
+                            type: datetime
+                User-write:
+                    type: object
+                    required: [email, password]
+                    properties:
+                        email:
+                            type: string
+                        password:
+                            type: string

@@ -18,6 +18,7 @@ class AppFixtures extends Fixture
                'plainPassword' => 'bilemo',
                'createdAt' => UserFactory::faker()->dateTimeBetween('-60 days', '-30 days'),
            ])
+            ->promoteRole('ROLE_CLIENT')
            ->create()
         ;
 
@@ -32,7 +33,8 @@ class AppFixtures extends Fixture
                          'plainPassword' => 'bilemo',
                          'createdAt' => UserFactory::faker()->dateTimeBetween('-60 days', '-30 days'),
                      ])
-                     ->create()
+                    ->promoteRole('ROLE_CLIENT')
+                    ->create()
         ;
 
 
