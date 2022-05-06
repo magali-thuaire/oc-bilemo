@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Manager\ProductManager;
+use App\Service\HttpCacheService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,10 +17,12 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ProductController extends AbstractController
 {
     private ProductManager $productManager;
+    private HttpCacheService $httpCacheService;
 
-    public function __construct(ProductManager $productManager)
+    public function __construct(ProductManager $productManager, HttpCacheService $httpCacheService)
     {
         $this->productManager = $productManager;
+        $this->httpCacheService = $httpCacheService;
     }
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -27,12 +30,12 @@ final class ProductController extends AbstractController
     {
         $product = $this->productManager->list($request);
 
-        return $this->json(
+        return $this->httpCacheService->cache($this->json(
             $product,
             Response::HTTP_OK,
             [],
             ['groups' => ['product:read']]
-        );
+        ), $request);
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
