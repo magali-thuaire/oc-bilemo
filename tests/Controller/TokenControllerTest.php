@@ -6,9 +6,9 @@ use App\Tests\Utils\ApiTestCase;
 
 final class TokenControllerTest extends ApiTestCase
 {
-    public function testPOSTCreateToken()
+    public function testTokenPOSTCreate()
     {
-        $user = $this->createUser();
+        $user = $this->createApiClient();
 
         $data = [
             'email' => 'test@bilemo.fr',
@@ -26,7 +26,7 @@ final class TokenControllerTest extends ApiTestCase
         );
     }
 
-    public function testRequiresAuthentication()
+    public function testTokenRequiresAuthentication()
     {
         $this->client->jsonRequest('GET', '/api/users');
 
@@ -69,9 +69,9 @@ final class TokenControllerTest extends ApiTestCase
         );
     }
 
-    public function testPOSTTokenInvalidCredentials()
+    public function testTokenPOSTInvalidCredentials()
     {
-        $user = $this->createUser();
+        $user = $this->createApiClient();
 
         $data = [
             'email' => 'test@bilemo.fr',
@@ -103,7 +103,7 @@ final class TokenControllerTest extends ApiTestCase
         );
     }
 
-    public function testBadToken()
+    public function testTokenBadToken()
     {
         $wrongAuthorization = 'Bearer WRONG';
         $this->client->setServerParameter('HTTP_AUTHORIZATION', $wrongAuthorization);

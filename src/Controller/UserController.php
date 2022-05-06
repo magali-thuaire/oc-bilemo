@@ -36,6 +36,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('', name: 'new', methods: ['POST'])]
+    #[IsGranted('ROLE_CLIENT')]
     public function new(Request $request): JsonResponse
     {
         $user = $this->userManager->create($request, ['groups' => ['user:write']]);
@@ -49,6 +50,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('OWNER', subject: 'user')]
     public function show(User $user): JsonResponse
     {
         return $this->json(
@@ -60,6 +62,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: ['PUT', 'PATCH'])]
+    #[IsGranted('OWNER', subject: 'user')]
     public function update(User $user, Request $request): JsonResponse
     {
         $user = $this->userManager->update($user, $request, ['groups' => ['user:write']]);
@@ -73,6 +76,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'remove', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[IsGranted('OWNER', subject: 'user')]
     public function remove(User $user): JsonResponse
     {
         $this->userManager->remove($user);

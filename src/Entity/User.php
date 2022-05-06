@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use App\Api\Attribute\Link;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation\Timestampable;
@@ -57,6 +59,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['user:read'])]
     private $updatedAt;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'users')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    private $client;
+
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: self::class, orphanRemoval: true)]
+    private $users;
+
+    public function __construct()
+    {
+        $this->users = new ArrayCollection();
+    }
 
     private const DATETIME_FORMAT = 'd/m/Y H:i:s';
 
@@ -164,5 +178,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUpdatedAt()
     {
         return $this->updatedAt->format(self::DATETIME_FORMAT);
+    }
+
+    public function getClient(): ?self
+    {
+        return $this->client;
+    }
+
+    public function setClient(?self $client): self
+    {
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(self $user): self
+    {
+        if (!$this->users->contains($user)) {
+            $this->users[] = $user;
+            $user->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(self $user): self
+    {
+        if ($this->users->removeElement($user)) {
+            // set the owning side to null (unless already changed)
+            if ($user->getClient() === $this) {
+                $user->setClient(null);
+            }
+        }
+
+        return $this;
     }
 }

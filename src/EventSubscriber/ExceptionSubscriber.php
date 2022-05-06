@@ -7,12 +7,14 @@ use App\Api\ApiProblemException;
 use App\Api\ResponseFactory;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
+use Pagerfanta\Exception\NotValidCurrentPageException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
 class ExceptionSubscriber implements EventSubscriberInterface
 {
@@ -35,10 +37,15 @@ class ExceptionSubscriber implements EventSubscriberInterface
         }
 
         $e = $event->getThrowable();
-        $statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
 
-        if ($statusCode == 500 && $this->parameterBag->get('kernel.debug')) {
-            return;
+        if ($e instanceof HttpExceptionInterface) {
+            $statusCode = $e->getStatusCode();
+        } elseif ($e instanceof NotValidCurrentPageException) {
+            $statusCode = Response::HTTP_NOT_FOUND;
+        } elseif ($e instanceof UnexpectedValueException) {
+            $statusCode = Response::HTTP_UNSUPPORTED_MEDIA_TYPE;
+        } else {
+            $statusCode = 500;
         }
 
         if ($e instanceof ApiProblemException) {

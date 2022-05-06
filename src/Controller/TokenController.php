@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class TokenController extends AbstractController
 {
     #[Route('', name: 'new', methods: ['POST'])]
-    public function new(): JsonResponse
+    public function create(): JsonResponse
     {
         throw new LogicException('This method can be blank - it will be intercepted by the token firewall.');
     }

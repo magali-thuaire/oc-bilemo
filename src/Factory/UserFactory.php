@@ -46,6 +46,26 @@ final class UserFactory extends ModelFactory
         ]);
     }
 
+    public function promoteRole(string $role): self
+    {
+        $defaults = $this->getDefaults();
+
+        $roles = array_merge($defaults['roles'], [
+            $role
+        ]);
+
+        return $this->addState([
+            'roles' => $roles,
+        ]);
+    }
+
+    public function setClient(Proxy $client): self
+    {
+        return $this->addState([
+            'client' => $client,
+        ]);
+    }
+
     protected function getDefaults(): array
     {
         return [
@@ -65,8 +85,7 @@ final class UserFactory extends ModelFactory
                     $user->setPassword($this->userPasswordHasher->hashPassword($user, $plainPassword));
                     $user->eraseCredentials();
                 }
-            })
-        ;
+            });
     }
 
     protected static function getClass(): string
