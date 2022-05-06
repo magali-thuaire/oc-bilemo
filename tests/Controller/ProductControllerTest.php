@@ -112,6 +112,12 @@ final class ProductControllerTest extends ApiTestCase
             $response,
             'items'
         );
+
+        // cache
+        $this->assertEquals(
+            'public',
+            $response->headers->get('Cache-Control')
+        );
     }
 
     public function testProductGETListPaginated()

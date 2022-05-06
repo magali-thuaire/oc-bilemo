@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Manager\UserManager;
+use App\Service\HttpCacheService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,10 +17,12 @@ use Symfony\Component\Routing\Annotation\Route;
 final class UserController extends AbstractController
 {
     private UserManager $userManager;
+    private HttpCacheService $httpCacheService;
 
-    public function __construct(UserManager $userManager)
+    public function __construct(UserManager $userManager, HttpCacheService $httpCacheService)
     {
         $this->userManager = $userManager;
+        $this->httpCacheService = $httpCacheService;
     }
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -27,12 +30,12 @@ final class UserController extends AbstractController
     {
         $users = $this->userManager->list($request);
 
-        return $this->json(
+        return $this->httpCacheService->cache($this->json(
             $users,
             Response::HTTP_OK,
             [],
             ['groups' => ['user:read']]
-        );
+        ), $request);
     }
 
     #[Route('', name: 'new', methods: ['POST'])]
