@@ -284,6 +284,9 @@
             "config/packages/stof_doctrine_extensions.yaml"
         ]
     },
+    "symfony/asset": {
+        "version": "v6.0.7"
+    },
     "symfony/browser-kit": {
         "version": "v6.0.3"
     },
