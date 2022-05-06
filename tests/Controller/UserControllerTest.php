@@ -8,6 +8,7 @@ use App\Repository\UserRepository;
 use App\Tests\Utils\ApiTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Zenstruck\Foundry\Proxy;
 
 final class UserControllerTest extends ApiTestCase
 {
@@ -23,7 +24,7 @@ final class UserControllerTest extends ApiTestCase
         $this->userPasswodHasher = $this->getService('security.user_password_hasher');
     }
 
-    public function testPOSTNew()
+    public function testUserPOSTNew()
     {
         $this->setAuthorizedClient();
 
@@ -76,7 +77,7 @@ final class UserControllerTest extends ApiTestCase
         );
     }
 
-    public function testPOSTNewValidationErrors()
+    public function testUserPOSTNewValidationErrors()
     {
         $this->setAuthorizedClient();
 
@@ -148,7 +149,7 @@ final class UserControllerTest extends ApiTestCase
         );
     }
 
-    public function testInvalidJson()
+    public function testUserInvalidJson()
     {
         $this->setAuthorizedClient();
 
@@ -171,7 +172,7 @@ EOF;
         );
     }
 
-    public function test405Exception()
+    public function testUser405Exception()
     {
         $this->client->jsonRequest('PUT', '/api/users');
 
@@ -194,19 +195,14 @@ EOF;
         );
     }
 
-    public function testGETShow()
+    public function testUserGETShow()
     {
-        $this->setAuthorizedClient();
+        $client = $this->setAuthorizedClient();
 
-        $user = UserFactory::new()
-                   ->withAttributes([
-                       'email' => 'test@bilemo.fr',
-                       'password' => 'bilemo'
-                   ])
-                   ->createdNow()
-                   ->create();
+        $user = $this->createUserOwnedByClient($client);
+        $showUserId = $user->getId();
 
-        $this->client->jsonRequest('GET', '/api/users/' . $user->getId());
+        $this->client->jsonRequest('GET', '/api/users/' . $showUserId);
 
         $this->assertResponseStatusCodeSame(200);
 
@@ -229,11 +225,11 @@ EOF;
         $this->asserter()->assertResponsePropertyEquals(
             $response,
             '_links.self',
-            '/api/users/' . $user->getId()
+            '/api/users/' . $showUserId
         );
     }
 
-    public function test404Exception()
+    public function testUser404Exception()
     {
         $this->client->jsonRequest('GET', '/api/users/fake');
 
@@ -256,17 +252,18 @@ EOF;
         );
     }
 
-    public function testPUTUpdate()
+    public function testUserPUTUpdate()
     {
-        $this->setAuthorizedClient();
+        $client = $this->setAuthorizedClient();
 
-        $user = $this->createUser();
+        $user = $this->createUserOwnedByClient($client);
+        $updateUserId = $user->getId();
 
         $data = [
             'email' => 'update@bilemo.fr',
             'password' => 'mobile'
         ];
-        $this->client->jsonRequest('PUT', '/api/users/' . $user->getId(), $data);
+        $this->client->jsonRequest('PUT', '/api/users/' . $updateUserId, $data);
 
         $this->assertResponseStatusCodeSame(200);
 
@@ -280,20 +277,21 @@ EOF;
             'email',
             'update@bilemo.fr'
         );
-        $updatedUser = $this->userRepository->find($user->getId());
+        $updatedUser = $this->userRepository->find($updateUserId);
         $this->assertTrue($this->userPasswodHasher->isPasswordValid($updatedUser, 'mobile'));
     }
 
-    public function testPATCHUpdate()
+    public function testUserPATCHUpdate()
     {
-        $this->setAuthorizedClient();
+        $client = $this->setAuthorizedClient();
 
-        $user = $this->createUser();
+        $user = $this->createUserOwnedByClient($client);
+        $updateUserId = $user->getId();
 
         $data = [
             'email' => 'patch@bilemo.fr',
         ];
-        $this->client->jsonRequest('PATCH', '/api/users/' . $user->getId(), $data);
+        $this->client->jsonRequest('PATCH', '/api/users/' . $updateUserId, $data);
 
         $this->assertResponseStatusCodeSame(200);
 
@@ -307,19 +305,22 @@ EOF;
             'email',
             'patch@bilemo.fr'
         );
+
     }
 
-    public function testPATCHUpdateValidationErrors()
+    public function testUserPATCHUpdateValidationErrors()
     {
-        $this->setAuthorizedClient();
+        $client = $this->setAuthorizedClient();
+
+        $user = $this->createUserOwnedByClient($client);
+        $updateUserId = $user->getId();
 
         // 1- min password
-        $user = $this->createUser();
 
         $data = [
             'password' => 'patch',
         ];
-        $this->client->jsonRequest('PATCH', '/api/users/' . $user->getId(), $data);
+        $this->client->jsonRequest('PATCH', '/api/users/' . $updateUserId, $data);
 
         $this->assertResponseStatusCodeSame(400);
 
@@ -335,28 +336,29 @@ EOF;
         );
     }
 
-    public function testDELETERemove()
+    public function testUserDELETERemove()
     {
-        $this->setAuthorizedClient();
+        $client = $this->setAuthorizedClient();
 
-        $user = $this->createUser();
+        $user = $this->createUserOwnedByClient($client);
+        $deleteUserId = $user->getId();
 
-        $this->client->jsonRequest('DELETE', '/api/users/' . $user->getId());
+        $this->client->jsonRequest('DELETE', '/api/users/' . $deleteUserId);
 
         $this->assertResponseStatusCodeSame(204);
 
         $response = $this->client->getResponse();
         $this->assertEmpty($response->getContent());
 
-        $removedUser = $this->userRepository->find($user->getId());
+        $removedUser = $this->userRepository->find($deleteUserId);
         $this->assertEmpty($removedUser);
     }
 
-    public function testGETList()
+    public function testUserGETList()
     {
-        $this->setAuthorizedClient();
+        $client = $this->setAuthorizedClient();
 
-        $this->createUsers(10);
+        $this->createUsersOwnedByClient(10, $client);
 
         $this->client->jsonRequest('GET', '/api/users');
 
@@ -373,11 +375,12 @@ EOF;
         );
     }
 
-    public function testGETListPaginated()
+    public function testUserGETListPaginated()
     {
-        $this->setAuthorizedClient();
+        $client = $this->setAuthorizedClient();
 
-        $this->createUsers(20);
+        $this->createUsersOwnedByClient(20, $client);
+        $this->createUsers(30);
 
         $this->client->jsonRequest('GET', '/api/users');
 
@@ -447,11 +450,36 @@ EOF;
         );
     }
 
+    private function createUsersOwnedByClient(int $nb, Proxy $client): void
+    {
+        $users = UserFactory::new()
+                    ->createdNow()
+                    ->setClient($client)
+                    ->createMany($nb)
+        ;
+    }
+
+    private function createUserOwnedByClient(Proxy $client, string $email = 'test@bilemo.fr', string $password = 'bilemo'
+    ): Proxy|User
+    {
+        return UserFactory::new()
+                    ->withAttributes([
+                        'email' => $email,
+                        'password' => $password
+                    ])
+                    ->createdNow()
+                    ->setClient($client)
+                    ->create();
+    }
+
     private function createUsers(int $nb): void
     {
-        UserFactory::new()
-           ->createdNow()
-           ->createMany($nb);
+        $client = $this->createApiClient();
+
+        $users = UserFactory::new()
+                   ->createdNow()
+                   ->setClient($client)
+                   ->createMany($nb);
     }
 
 }

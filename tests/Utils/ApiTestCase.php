@@ -29,15 +29,17 @@ class ApiTestCase extends WebTestCase
         $this->purgeDatabase();
     }
 
-    protected function setAuthorizedClient() {
+    protected function setAuthorizedClient(): Proxy {
 
-        $user = $this->createUser('authorized@test.fr');
+        $user = $this->createApiClient('authorized@test.fr');
 
         $token = $this->getService('lexik_jwt_authentication.encoder')
                       ->encode(['email' => $user->getEmail()]);
         $autorization = 'Bearer '. $token;
 
         $this->client->setServerParameter('HTTP_AUTHORIZATION', $autorization);
+
+        return $user;
     }
 
     protected function onNotSuccessfulTest(Throwable $t): void
@@ -108,7 +110,7 @@ class ApiTestCase extends WebTestCase
         return $this->responseAsserter;
     }
 
-    protected function createUser(string $email = 'test@bilemo.fr'): Proxy|User
+    protected function createApiClient(string $email = 'test@bilemo.fr'): Proxy|User
     {
         return UserFactory::new()
                   ->withAttributes([
@@ -116,6 +118,7 @@ class ApiTestCase extends WebTestCase
                       'password' => 'bilemo'
                   ])
                   ->createdNow()
+                  ->promoteRole('ROLE_CLIENT')
                   ->create();
     }
 }

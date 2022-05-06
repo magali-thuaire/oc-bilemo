@@ -17,7 +17,7 @@ class ResponseFactory
             $data,
             $apiProblem->getStatusCode(),
             [
-                'content_type' => 'application/problem+json'
+                'content-type' => 'application/problem+json'
             ]
         );
     }

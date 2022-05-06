@@ -68,6 +68,13 @@ class ApiProblem
         return $this->statusCode;
     }
 
+    public function setStatusCode(int $statusCode): self
+    {
+        $this->statusCode = $statusCode;
+
+        return $this;
+    }
+
     public function getTitle(): ?string
     {
         return $this->title;

@@ -9,7 +9,7 @@ use Zenstruck\Foundry\Proxy;
 
 final class ProductControllerTest extends ApiTestCase
 {
-    public function testGETShow()
+    public function testProductGETShow()
     {
         $this->setAuthorizedClient();
 
@@ -45,7 +45,7 @@ final class ProductControllerTest extends ApiTestCase
         );
     }
 
-    public function test405Exception()
+    public function testProduct405Exception()
     {
         $product = $this->createProduct();
 
@@ -70,7 +70,7 @@ final class ProductControllerTest extends ApiTestCase
         );
     }
 
-    public function test404Exception()
+    public function testProduct404Exception()
     {
         $this->client->jsonRequest('GET', '/api/products/fake');
 
@@ -93,7 +93,7 @@ final class ProductControllerTest extends ApiTestCase
         );
     }
 
-    public function testGETList()
+    public function testProductGETList()
     {
         $this->setAuthorizedClient();
 
@@ -114,7 +114,7 @@ final class ProductControllerTest extends ApiTestCase
         );
     }
 
-    public function testGETListPaginated()
+    public function testProductGETListPaginated()
     {
         $this->setAuthorizedClient();
 
