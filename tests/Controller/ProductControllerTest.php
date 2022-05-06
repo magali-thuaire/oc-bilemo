@@ -45,7 +45,7 @@ final class ProductControllerTest extends ApiTestCase
         );
     }
 
-    public function testProduct405Exception()
+    public function testProductGETShow405Exception()
     {
         $product = $this->createProduct();
 
@@ -70,7 +70,7 @@ final class ProductControllerTest extends ApiTestCase
         );
     }
 
-    public function testProduct404Exception()
+    public function testProductGETShow404Exception()
     {
         $this->client->jsonRequest('GET', '/api/products/fake');
 
@@ -185,6 +185,35 @@ final class ProductControllerTest extends ApiTestCase
             $response,
             '_links.last',
             '?order=asc&filter=a'
+        );
+    }
+
+    public function testProductGETListPaginated404Exception()
+    {
+        $this->setAuthorizedClient();
+
+        $this->createProducts(10);
+
+        $this->client->jsonRequest('GET', '/api/products');
+
+        // error page
+        $this->client->jsonRequest('GET', '/api/products?page=100');
+
+        $response = $this->client->getResponse();
+
+        $this->assertEquals(
+            'application/problem+json',
+            $response->headers->get('Content-Type')
+        );
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'type',
+            'about:blank'
+        );
+        $this->asserter()->assertResponsePropertyEquals(
+            $response,
+            'title',
+            'Not Found'
         );
     }
 

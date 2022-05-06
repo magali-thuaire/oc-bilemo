@@ -149,7 +149,7 @@ final class UserControllerTest extends ApiTestCase
         );
     }
 
-    public function testUserInvalidJson()
+    public function testUserPOSTNew415Exception()
     {
         $this->setAuthorizedClient();
 
@@ -229,7 +229,7 @@ EOF;
         );
     }
 
-    public function testUser404Exception()
+    public function testUserGETShow404Exception()
     {
         $this->client->jsonRequest('GET', '/api/users/fake');
 
