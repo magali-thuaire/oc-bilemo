@@ -13,6 +13,9 @@ nelmio_api_doc:
                             application/json:
                                 schema:
                                     ref: '#/components/schemas/User-write'
+                                example:
+                                    email: 'client@bilemo.fr'
+                                    password: 'bilemo'
                     responses:
                         200:
                             description: 'Creates the token and returns it'

@@ -32,7 +32,7 @@ trait OrderAndFilterTrait
         $this->filterBy = $defaultFilterBy;
         $this->alias = $alias;
 
-        if (property_exists($className, $orderBy)) {
+        if ($orderBy && property_exists($className, $orderBy)) {
             $this->orderBy = $orderBy;
         }
 
@@ -40,7 +40,7 @@ trait OrderAndFilterTrait
             $this->order = $order;
         }
 
-        if (property_exists($className, $filterBy)) {
+        if ($filterBy && property_exists($className, $filterBy)) {
             $this->filterBy = $filterBy;
         }
 
