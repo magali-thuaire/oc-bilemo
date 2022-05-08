@@ -52,10 +52,6 @@ class ExceptionSubscriber implements EventSubscriberInterface
             $apiProblem = $e->getApiProblem();
         } else {
             $apiProblem = new ApiProblem($statusCode);
-
-            if ($e instanceof HttpExceptionInterface && $apiProblem->getStatusCode() != Response::HTTP_NOT_FOUND) {
-                $apiProblem->set('detail', $e->getMessage());
-            }
         }
 
         $response = $this->responseFactory->createResponse($apiProblem);

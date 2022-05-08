@@ -9,90 +9,7 @@ use Zenstruck\Foundry\Proxy;
 
 final class ProductControllerTest extends ApiTestCase
 {
-    public function testProductGETShow()
-    {
-        $this->setAuthorizedClient();
-
-        $product = $this->createProduct();
-
-        $this->client->jsonRequest('GET', '/api/products/' . $product->getId());
-
-        $this->assertResponseStatusCodeSame(200);
-
-        $response = $this->client->getResponse();
-        $this->assertResponseHasHeader('Location');
-        $this->asserter()->assertResponsePropertiesExist(
-            $response,
-            [
-                'id',
-                'name',
-                'description',
-                'price',
-            ]
-        );
-        $this->asserter()->assertResponsePropertyDoesNotExist(
-            $response,
-            'createdAt'
-        );
-        $this->asserter()->assertResponsePropertyDoesNotExist(
-            $response,
-            'updatedAt'
-        );
-        $this->asserter()->assertResponsePropertyEquals(
-            $response,
-            '_links.self',
-            '/api/products/' . $product->getId()
-        );
-    }
-
-    public function testProductGETShow405Exception()
-    {
-        $product = $this->createProduct();
-
-        $this->client->jsonRequest('PUT', '/api/products/' . $product->getId());
-
-        $this->assertResponseStatusCodeSame(405);
-
-        $response = $this->client->getResponse();
-        $this->assertEquals(
-            'application/problem+json',
-            $response->headers->get('Content-Type')
-        );
-        $this->asserter()->assertResponsePropertyEquals(
-            $response,
-            'type',
-            'about:blank'
-        );
-        $this->asserter()->assertResponsePropertyEquals(
-            $response,
-            'title',
-            'Method Not Allowed'
-        );
-    }
-
-    public function testProductGETShow404Exception()
-    {
-        $this->client->jsonRequest('GET', '/api/products/fake');
-
-        $this->assertResponseStatusCodeSame(404);
-
-        $response = $this->client->getResponse();
-        $this->assertEquals(
-            'application/problem+json',
-            $response->headers->get('Content-Type')
-        );
-        $this->asserter()->assertResponsePropertyEquals(
-            $response,
-            'type',
-            'about:blank'
-        );
-        $this->asserter()->assertResponsePropertyEquals(
-            $response,
-            'title',
-            'Not Found'
-        );
-    }
-
+    // Response 200 - OK
     public function testProductGETList()
     {
         $this->setAuthorizedClient();
@@ -194,33 +111,104 @@ final class ProductControllerTest extends ApiTestCase
         );
     }
 
+    // Response 401 - Unauthorized
+    public function testProductGETList401Exception()
+    {
+        $this->client->jsonRequest('GET', '/api/products');
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertHttpException($response, 401);
+    }
+
+    // Response 404 - Not Found
     public function testProductGETListPaginated404Exception()
     {
         $this->setAuthorizedClient();
 
         $this->createProducts(10);
 
-        $this->client->jsonRequest('GET', '/api/products');
-
         // error page
         $this->client->jsonRequest('GET', '/api/products?page=100');
 
         $response = $this->client->getResponse();
+        $this->asserter()->assertHttpException($response, 404);
+    }
 
-        $this->assertEquals(
-            'application/problem+json',
-            $response->headers->get('Content-Type')
+    // Response 405 - Method Not Allowed
+    public function testProductGETList405Exception()
+    {
+        $this->client->jsonRequest('PUT', '/api/products');
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertHttpException($response, 405);
+    }
+
+    // Response 200 - OK
+    public function testProductGETShow()
+    {
+        $this->setAuthorizedClient();
+
+        $product = $this->createProduct();
+
+        $this->client->jsonRequest('GET', '/api/products/' . $product->getId());
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = $this->client->getResponse();
+        $this->assertResponseHasHeader('Location');
+        $this->asserter()->assertResponsePropertiesExist(
+            $response,
+            [
+                'id',
+                'name',
+                'description',
+                'price',
+            ]
+        );
+        $this->asserter()->assertResponsePropertyDoesNotExist(
+            $response,
+            'createdAt'
+        );
+        $this->asserter()->assertResponsePropertyDoesNotExist(
+            $response,
+            'updatedAt'
         );
         $this->asserter()->assertResponsePropertyEquals(
             $response,
-            'type',
-            'about:blank'
+            '_links.self',
+            '/api/products/' . $product->getId()
         );
-        $this->asserter()->assertResponsePropertyEquals(
-            $response,
-            'title',
-            'Not Found'
-        );
+    }
+
+    // Response 401 - Unauthorized
+    public function testProductGETShow401Exception()
+    {
+        $product = $this->createProduct();
+
+        $this->client->jsonRequest('GET', '/api/products/' . $product->getId());
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertHttpException($response, 401);
+    }
+
+    // Response 404 - Not Found
+    public function testProductGETShow404Exception()
+    {
+        $this->client->jsonRequest('GET', '/api/products/fake');
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertHttpException($response, 404);
+    }
+
+    // Response 405 - Method Not Allowed
+    public function testProductGETShow405Exception()
+    {
+        $product = $this->createProduct();
+
+        $this->client->jsonRequest('PUT', '/api/products/' . $product->getId());
+
+        $response = $this->client->getResponse();
+        $this->asserter()->assertHttpException($response, 405);
     }
 
     private function createProduct(): Product|Proxy

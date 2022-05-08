@@ -35,12 +35,13 @@ final class UserManager
 
     public function list(Request $request): array
     {
-        $filter = $request->query->get('filter');
-        $order = $request->query->get('order', 'DESC');
+        $qb = $this->userRepository->findAllOwnedByClientQueryBuilder($request);
 
-        $qb = $this->userRepository->findAllOwnedByClientQueryBuilder($order, $filter);
-
-        return $this->paginationFactory->createCollection($qb, $request);
+        return $this->paginationFactory->createCollection(
+            $qb,
+            $request,
+            $this->userRepository
+        );
     }
 
     public function create(Request $request, array $context = []): User
@@ -56,6 +57,7 @@ final class UserManager
 
         $user = $form->getData();
         $this->setUserPassword($user);
+        $this->setClient($user);
 
         $this->userRepository->add($user);
 
@@ -94,5 +96,12 @@ final class UserManager
                 ->eraseCredentials()
             ;
         }
+    }
+    
+    private function setClient(User $user): void {
+        
+        /** @var User $client */
+        $client = $this->security->getUser();
+        $user->setClient($client);
     }
 }

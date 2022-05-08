@@ -2,6 +2,7 @@
 
 namespace App\Tests\Utils;
 
+use App\Api\ApiProblem;
 use Exception;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,7 +12,7 @@ use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
- * Helper class to assert different conditions on Guzzle responses
+ * Helper class to assert different conditions on HTTP Foundation responses
  */
 class ResponseAsserter extends Assert
 {
@@ -185,5 +186,107 @@ class ResponseAsserter extends Assert
                 implode(', ', array_keys($values))
             ), 0, $e);
         }
+    }
+
+    public function assertHttpException(Response $response, int $statusCode)
+    {
+        $this->assertEquals(
+            $statusCode,
+            $response->getStatusCode()
+        );
+        $this->assertException($response);
+        $this->assertResponsePropertyEquals(
+            $response,
+            'type',
+            'about:blank'
+        );
+        $this->assertResponsePropertyEquals(
+            $response,
+            'title',
+            Response::$statusTexts[$statusCode]
+        );
+    }
+
+    public function assertValidationErrorsException(Response $response, int $statusCode)
+    {
+        $this->assertEquals(
+            $statusCode,
+            $response->getStatusCode()
+        );
+        $this->assertException($response);
+        $this->assertResponsePropertyExists(
+            $response,
+            'errors'
+        );
+        $this->assertResponsePropertyContains(
+            $response,
+            'type',
+            ApiProblem::TYPE_VALIDATION_ERROR
+        );
+        $this->assertResponsePropertyEquals(
+            $response,
+            'title',
+            ApiProblem::$titles[ApiProblem::TYPE_VALIDATION_ERROR]
+        );
+    }
+
+    public function assert422Exception(Response $response)
+    {
+        $this->assertEquals(
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            $response->getStatusCode()
+        );
+        $this->assertException($response);
+        $this->assertResponsePropertyExists(
+            $response,
+            'errors'
+        );
+        $this->assertResponsePropertyContains(
+            $response,
+            'type',
+            ApiProblem::TYPE_UNPROCESSABLE_ENTITY
+        );
+        $this->assertResponsePropertyEquals(
+            $response,
+            'title',
+            ApiProblem::$titles[ApiProblem::TYPE_UNPROCESSABLE_ENTITY]
+        );
+
+    }
+
+    public function assert415Exception(Response $response)
+    {
+        $this->assertEquals(
+            Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
+            $response->getStatusCode()
+        );
+        $this->assertException($response);
+        $this->assertResponsePropertyContains(
+            $response,
+            'type',
+            ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT
+        );
+        $this->assertResponsePropertyEquals(
+            $response,
+            'title',
+            ApiProblem::$titles[ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT]
+        );
+
+    }
+
+    public function assertException(Response $response)
+    {
+        $this->assertEquals(
+            'application/problem+json',
+            $response->headers->get('Content-Type')
+        );
+        $this->assertResponsePropertiesExist(
+            $response,
+            [
+                'status',
+                'type',
+                'title'
+            ]
+        );
     }
 }

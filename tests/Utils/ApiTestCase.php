@@ -31,7 +31,7 @@ class ApiTestCase extends WebTestCase
 
     protected function setAuthorizedClient(): Proxy {
 
-        $user = $this->createApiClient('authorized@test.fr');
+        $user = $this->createApiClient('authorized@bilemo.fr');
 
         $token = $this->getService('lexik_jwt_authentication.encoder')
                       ->encode(['email' => $user->getEmail()]);

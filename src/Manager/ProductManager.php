@@ -21,12 +21,13 @@ final class ProductManager
 
     public function list(Request $request): array
     {
-        $filter = $request->query->get('filter');
-        $order = $request->query->get('order', 'DESC');
+        $qb = $this->productRepository->findAllQueryBuilder($request);
 
-        $qb = $this->productRepository->findAllQueryBuilder($order, $filter);
-
-        return $this->paginationFactory->createCollection($qb, $request);
+        return $this->paginationFactory->createCollection(
+            $qb,
+            $request,
+            $this->productRepository
+        );
     }
 
 }

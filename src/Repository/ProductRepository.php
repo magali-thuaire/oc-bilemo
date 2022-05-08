@@ -2,10 +2,13 @@
 
 namespace App\Repository;
 
+use App\Api\Pagination\OrderAndFilterTrait;
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @extends ServiceEntityRepository<Product>
@@ -17,9 +20,17 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProductRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    use OrderAndFilterTrait;
+
+    private ParameterBagInterface $parameterBag;
+
+    public function __construct(
+        ManagerRegistry $registry,
+        ParameterBagInterface $parameterBag
+    )
     {
         parent::__construct($registry, Product::class);
+        $this->parameterBag = $parameterBag;
     }
 
     /**
@@ -42,16 +53,22 @@ class ProductRepository extends ServiceEntityRepository
         }
     }
 
-    public function findAllQueryBuilder(string $order = 'DESC', ?string $filter = null): QueryBuilder
+    public function findAllQueryBuilder(Request $request): QueryBuilder
     {
+        $this->setOrderAndFilterAttributes(
+            $request,
+            $this->parameterBag,
+            $this->getClassName(),
+            'name',
+            'p'
+        );
+
         $qb = $this->createQueryBuilder('p')
-                   ->orderBy('p.createdAt', strtoupper($order))
+                   ->orderBy('p.createdAt', strtoupper($this->order))
         ;
 
-        if ($filter) {
-            $qb->andWhere('p.name LIKE :filter')
-               ->setParameter('filter', "%$filter%")
-            ;
+        if ($this->filter) {
+            $qb = $this->filter($qb);
         }
 
         return $qb;
