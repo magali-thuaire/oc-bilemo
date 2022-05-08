@@ -2,16 +2,17 @@
 
 namespace App\Repository;
 
+use App\Api\Pagination\OrderAndFilterTrait;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
-
-use function get_class;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -23,12 +24,20 @@ use function get_class;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    private Security $security;
+    use OrderAndFilterTrait;
 
-    public function __construct(ManagerRegistry $registry, Security $security)
+    private Security $security;
+    private ParameterBagInterface $parameterBag;
+
+    public function __construct(
+        ManagerRegistry $registry,
+        Security $security,
+        ParameterBagInterface $parameterBag
+    )
     {
         parent::__construct($registry, User::class);
         $this->security = $security;
+        $this->parameterBag = $parameterBag;
     }
 
     public function add(User $entity, bool $flush = true): void
@@ -66,32 +75,32 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
-    public function findAllOwnedByClientQueryBuilder(string $order, ?string $filter = null): QueryBuilder
+    public function findAllOwnedByClientQueryBuilder(Request $request): QueryBuilder
     {
         $client = $this->security->getUser();
+        $this->setOrderAndFilterAttributes(
+            $request,
+            $this->parameterBag,
+            $this->getClassName(),
+            'email',
+            'u'
+        );
 
-        $qb = $this->findAllQueryBuilder($order)
+        $qb = $this->findAllQueryBuilder()
                 ->andWhere('u.id = :client OR u.client = :client')
                 ->setParameter('client', $client)
         ;
 
-        if ($filter) {
-            $qb = $this->filterByEmail($qb, $filter);
+        if ($this->filter) {
+            $qb = $this->filter($qb);
         }
 
         return $qb;
     }
 
-    public function filterByEmail(QueryBuilder $qb, string $filter): QueryBuilder
-    {
-        return $qb->andWhere('u.email LIKE :filter')
-                  ->setParameter('filter', "%$filter%")
-            ;
-    }
-
-    private function findAllQueryBuilder(string $order = 'DESC'): QueryBuilder
+    private function findAllQueryBuilder(): QueryBuilder
     {
         return $this->createQueryBuilder('u')
-                    ->orderBy('u.createdAt', strtoupper($order));
+                    ->orderBy(sprintf('u.%s', $this->orderBy), strtoupper($this->order));
     }
 }

@@ -24,10 +24,10 @@ nelmio_api_doc:
                                             token:
                                                 type: string
                                                 readOnly: true
+                        400:
+                            description: 'Bad Request'
                         401:
                             description: 'Invalid Credentials'
-                        400:
-                            description: 'Invalid Input'
                         405:
                             description: 'Method Not Allowed'
             /api/products:
@@ -256,10 +256,10 @@ nelmio_api_doc:
                             description: 'Unauthorized'
                         403:
                             description: 'Forbidden'
-                        405:
-                            description: 'Method Not Allowed'
                         404:
                             description: 'Resource Not Found'
+                        405:
+                            description: 'Method Not Allowed'
         tags:
             - name: 'Authentication'
             - name: 'Products'

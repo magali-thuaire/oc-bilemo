@@ -2,9 +2,11 @@
 
 namespace App\Api\Pagination;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -12,26 +14,28 @@ class PaginationFactory
 {
 
     private UrlGeneratorInterface $urlGenerator;
+    private ParameterBagInterface $parameterBag;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator)
+    public function __construct(UrlGeneratorInterface $urlGenerator, ParameterBagInterface $parameterBag)
     {
         $this->urlGenerator = $urlGenerator;
+        $this->parameterBag = $parameterBag;
     }
 
-    public function createCollection(QueryBuilder $qb, Request $request): array
+    public function createCollection(QueryBuilder $qb, Request $request, ServiceEntityRepository $repository): array
     {
         $currentPage = $request->query->get('page', 1);
-//        $filter = $request->query->get('filter', null);
-//        $order = $request->query->get('order', 'DESC');
+        $maxItemsPerPage = $request->query->get('count') ?? $this->parameterBag->get('pagination.items_per_page');
 
         $adapter = new QueryAdapter($qb);
         $pagerfanta = new Pagerfanta($adapter);
-        $pagerfanta->setMaxPerPage(PaginatedCollection::PAGINATION_LIMIT);
+        $pagerfanta->setMaxPerPage($maxItemsPerPage);
         $pagerfanta->setCurrentPage($currentPage);
 
-        $usersPaginated = new PaginatedCollection(
+        $itemsPaginated = new PaginatedCollection(
             $pagerfanta->getCurrentPageResults(),
-            $pagerfanta->getNbResults()
+            $pagerfanta->getNbResults(),
+            $repository
         );
 
         $route = $request->get('_route');
@@ -43,18 +47,18 @@ class PaginationFactory
             ));
         };
 
-        $usersPaginated->addLink('self', $createLinkUrl($currentPage));
-        $usersPaginated->addLink('first', $createLinkUrl(1));
-        $usersPaginated->addLink('last', $createLinkUrl($pagerfanta->getNbPages()));
+        $itemsPaginated->addLink('self', $createLinkUrl($currentPage));
+        $itemsPaginated->addLink('first', $createLinkUrl(1));
+        $itemsPaginated->addLink('last', $createLinkUrl($pagerfanta->getNbPages()));
 
         if ($pagerfanta->hasNextPage()) {
-            $usersPaginated->addLink('next', $createLinkUrl($pagerfanta->getNextPage()));
+            $itemsPaginated->addLink('next', $createLinkUrl($pagerfanta->getNextPage()));
         }
 
         if ($pagerfanta->hasPreviousPage()) {
-            $usersPaginated->addLink('prev', $createLinkUrl($pagerfanta->getPreviousPage()));
+            $itemsPaginated->addLink('prev', $createLinkUrl($pagerfanta->getPreviousPage()));
         }
 
-        return $usersPaginated->toArray();
+        return $itemsPaginated->toArray();
     }
 }
