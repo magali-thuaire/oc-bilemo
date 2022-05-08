@@ -1,17 +1,15 @@
-<?php /** @noinspection ALL */
+<?php
 
 namespace App\Tests\Utils;
 
 use App\Entity\User;
 use App\Factory\UserFactory;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
-use PHPUnit\Framework\ExpectationFailedException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Translation\Formatter\MessageFormatterInterface;
 use Throwable;
 use Zenstruck\Foundry\Proxy;
 
@@ -76,10 +74,10 @@ class ApiTestCase extends WebTestCase
             $data = json_decode($body);
             if ($data === null) {
                 // invalid JSON!
-                return $this->printDebug($body);
+                $this->printDebug($body);
             }
             // valid JSON, print it pretty
-            return $this->printDebug(json_encode($data, JSON_PRETTY_PRINT));
+            $this->printDebug(json_encode($data, JSON_PRETTY_PRINT));
         }
     }
 

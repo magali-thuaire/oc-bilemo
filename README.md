@@ -1,4 +1,4 @@
-# BileMo
+# API BileMo
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6da11f24de9b463a817d88204aa11c84)](https://www.codacy.com/gh/magali-thuaire/oc-bilemo/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=magali-thuaire/oc-bilemo&amp;utm_campaign=Badge_Grade)
 
@@ -66,6 +66,17 @@ If you do *not* want to use Docker, just make sure to start your own
 database server and update the `DATABASE_URL` environment variable in
 `.env` or `.env.local` before running the commands above.
 
+**Generate the SSL keys for Json Web Token**
+
+This application uses JWT authentication.
+Generate the SSL keys by running:
+
+```
+$ symfony console lexik:jwt:generate-keypair
+```
+
+Your keys will land in config/jwt/private.pem and config/jwt/public.pem
+
 **Start the Symfony web server**
 
 You can use Nginx or Apache, but Symfony's local web server
@@ -88,8 +99,25 @@ error that you need to run `symfony server:ca:install` first).
 
 Now check out the site at `https://localhost:8000`
 
+## Documentation
+
+[Documentation](https://magali-thuaire.github.io/oc-bilemo)
+
+**Live documentation**
+```
+https://localhost:8000/api/doc.json
+```
+
 ## Default Connexions
 ```
 email: client@bilemo.fr
 password: bilemo
+```
+
+## Functional Tests
+
+```
+symfony console doctrine:database:create --env=test
+symfony console doctrine:migrations:migrate --env=test
+symfony run bin/phpunit 
 ```

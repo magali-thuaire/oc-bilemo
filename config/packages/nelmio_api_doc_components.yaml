@@ -12,19 +12,33 @@ nelmio_api_doc:
                     description: 'The page number'
                     in: 'query'
                     schema:
-                        type: int
+                        type: integer
                         default: 1
                 order:
                     name: 'order'
-                    description: 'Set to (asc) or (desc) to sort with ascending/descending order by created_at property'
+                    description: 'Set to (asc) or (desc) to sort with ascending/descending order by orderBy property'
                     in: 'query'
                     schema:
-                        type: int
+                        type: string
                         default: 'asc'
                         pattern: 'asc|desc'
+                orderBy:
+                    name: 'orderBy'
+                    description: 'Set to sort the result by orderBy property'
+                    in: 'query'
+                    schema:
+                        type: string
+                        default: 'createdAt'
                 filter:
                     name: 'filter'
-                    description: 'Set to filter by username property'
+                    description: 'Set to filter by filterBy property'
+                    in: 'query'
+                    schema:
+                        type: string
+                        default: null
+                filterBy:
+                    name: 'filterBy'
+                    description: 'Set to filter the result by the filterBy property'
                     in: 'query'
                     schema:
                         type: string
@@ -41,6 +55,11 @@ nelmio_api_doc:
                             type: string
                         price:
                             type: float
+                        _links:
+                            type: object
+                            properties:
+                                self:
+                                    type: string
                 User-read:
                     type: object
                     properties:
@@ -52,6 +71,11 @@ nelmio_api_doc:
                             type: datetime
                         updatedAt:
                             type: datetime
+                        _links:
+                            type: object
+                            properties:
+                                self:
+                                    type: string
                 User-write:
                     type: object
                     required: [email, password]

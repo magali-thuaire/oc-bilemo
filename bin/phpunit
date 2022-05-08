@@ -1,5 +1,5 @@
 #!/usr/bin/env php
-/** @noinspection PhpMultipleClassDeclarationsInspection *//** @noinspection ALL *//** @noinspection PhpMultipleClassDeclarationsInspection *//** @noinspection ALL */<?php
+<?php
 
 if (!ini_get('date.timezone')) {
     ini_set('date.timezone', 'UTC');

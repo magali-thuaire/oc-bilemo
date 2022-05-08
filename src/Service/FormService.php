@@ -1,6 +1,4 @@
-<?php /** @noinspection PhpCSValidationInspection */
-
-/** @noinspection ALL */
+<?php
 
 namespace App\Service;
 
