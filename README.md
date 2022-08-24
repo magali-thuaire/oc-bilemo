@@ -108,6 +108,12 @@ Now check out the site at `https://localhost:8000`
 https://localhost:8000/api/doc.json
 ```
 
+**Generate documentation**
+```
+symfony console nelmio:apidoc:dump --format=json > json-pretty-formatted.json
+```
+Go to [Swagger Editor](https://editor-next.swagger.io/) : paste the json-pretty-formatted.json and Generate Client in html2.
+
 ## Default Connexions
 ```
 email: client@bilemo.fr
@@ -120,4 +126,14 @@ password: bilemo
 symfony console doctrine:database:create --env=test
 symfony console doctrine:migrations:migrate --env=test
 symfony run bin/phpunit 
+```
+
+## Deployment
+
+For Apache users that have the error "401 - JWT Token not found", the solution is to rewrite HTTP Authorization header of request, by placing following instructions on your virtualhost :
+
+```
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 ```
