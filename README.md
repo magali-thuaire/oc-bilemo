@@ -1,9 +1,9 @@
 # API BileMo
 *Web Service exposant une API REST*
 
-[Site](https://bilemo.magali.website)   
+[Lien vers le site](https://bilemo.magali.website)   
 
-[Documenation](https://magali-thuaire.github.io/oc-bilemo/)
+[Lien vers la documenation](https://magali-thuaire.github.io/oc-bilemo/)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6da11f24de9b463a817d88204aa11c84)](https://www.codacy.com/gh/magali-thuaire/oc-bilemo/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=magali-thuaire/oc-bilemo&amp;utm_campaign=Badge_Grade)
 
